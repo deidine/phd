@@ -1,0 +1,35 @@
+# Statistical Authorization Anomaly Detector (SAAD) — Dependencies
+# Contribution 2 of PhD Thesis
+# Key references:
+#   - Chandola et al. (2009): https://doi.org/10.1145/1541880.1541882
+#   - Nychis et al. (2008): https://doi.org/10.1145/1452520.1452539
+#   - Blazek et al. (2001): https://doi.org/10.1109/IWIAS.2001.935077
+
+# Numerical computing (for CUSUM baseline statistics)
+# https://numpy.org/
+numpy==1.26.2
+
+# Data manipulation (for CIC-IDS2017 evaluation)
+# https://pandas.pydata.org/
+pandas==2.1.3
+
+# Scientific computing (for statistical tests in evaluation)
+# https://scipy.org/
+scipy==1.11.4
+
+# Structured logging
+# https://www.structlog.org/
+structlog==23.2.0
+
+# NOTE: The detector intentionally uses NO ML libraries.
+# The following are NOT required and should NOT be installed:
+#   scikit-learn, tensorflow, torch, keras, xgboost, lightgbm
+
+# Install:
+#   pip install -r requirements.txt
+#
+# Python version: 3.11+
+# Tested with: Python 3.11.4, Keto v0.11.1 (log format v2)
+#
+# CIC-IDS2017 dataset (for evaluation only):
+#   https://www.unb.ca/crc/research/datasets/ids/CIC-IDS2017.html
