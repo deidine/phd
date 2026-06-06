@@ -1,6 +1,6 @@
 # Research Foundation — Book + 3 Key Articles
 ## Thesis: Moving Target Defense & Formal Authorization Verification
-## for Distributed Microservices Security (No ML)
+## for Distributed Microservices Security 
 
 ---
 
@@ -246,7 +246,7 @@ Sengupta et al. (2020) — MTD Survey
             ▼
     YOUR THESIS
 "Build the MTD engine for Kubernetes +
- statistical detection (no ML) +
+ statistical detection  +
  formally verify the Zanzibar authorization model."
 ```
 
@@ -261,7 +261,7 @@ Sengupta et al. (2020) — MTD Survey
 > inside Kubernetes so an attacker who maps the system finds a different
 > topology moments later.
 > Second, **statistical anomaly detection** using entropy and CUSUM —
-> pure mathematics, no ML — to detect DDoS and unusual authorization patterns.
+> pure mathematics,  — to detect DDoS and unusual authorization patterns.
 > Third, **formal verification with TLA+** to mathematically prove that
 > the authorization system (based on Google's Zanzibar model, implemented
 > as Ory Keto) cannot be exploited for privilege escalation or lateral movement.

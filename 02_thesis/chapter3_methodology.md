@@ -224,7 +224,7 @@ Parameter rationale: k = 0.5σ is the classical recommendation (Wald, 1945) for 
 Full implementation: [03_prototype/statistical_detector/detector.py](../03_prototype/statistical_detector/detector.py)
 
 Key design decisions:
-- **No ML imports.** The implementation uses only: `math`, `numpy`, `collections`, standard library.
+- ** imports.** The implementation uses only: `math`, `numpy`, `collections`, standard library.
 - **Real-time tail mode:** the detector seeks to the end of the log file on startup and processes each new line as it is appended.
 - **Sliding window:** window state is cleared after each `tick()` call. This avoids unbounded memory growth.
 - **No state persistence:** the detector is stateless across restarts (re-establishes baselines). A future version could persist baseline state to disk.

@@ -52,7 +52,7 @@ Every current intrusion detection system for cloud microservices uses machine le
 2. **Black-box opacity:** When a neural network flags an alert, an operator cannot understand why. Explainability in security-critical contexts is not optional.
 3. **Adversarial fragility:** Sophisticated attackers can craft inputs designed to evade ML classifiers [Goodfellow et al., 2015]. Statistical detectors are harder to evade because they are based on mathematical properties of traffic distributions, not pattern recognition.
 
-**This thesis proposes statistical anomaly detection using Shannon entropy and CUSUM [Chandola et al., 2009: https://doi.org/10.1145/1541880.1541882] applied to Keto authorization request logs — achieving reliable detection with no ML, no training data, and transparent, auditable alert logic.**
+**This thesis proposes statistical anomaly detection using Shannon entropy and CUSUM [Chandola et al., 2009: https://doi.org/10.1145/1541880.1541882] applied to Keto authorization request logs — achieving reliable detection with , no training data, and transparent, auditable alert logic.**
 
 ---
 
@@ -80,7 +80,7 @@ This thesis makes three original contributions to the field of distributed syste
 A Kubernetes controller, implemented in Python, that periodically rotates ClusterIP addresses, port assignments, and internal service names of microservices. Service discovery for legitimate clients is maintained through Keto relationship tuples, which serve as the dynamic service registry. This is the first MTD system that integrates endpoint rotation with a formally-specified authorization layer.
 
 **Contribution 2 — Statistical Authorization Anomaly Detector (SAAD):**
-A lightweight statistical detector that monitors Keto authorization request logs in real time. It computes Shannon entropy across the distribution of authorization targets and applies CUSUM to per-service-pair request rates. Alerts are generated when entropy drops by more than 40% (indicating DDoS concentration) or when CUSUM exceeds 5σ (indicating a slow-ramp attack or lateral movement probe). No machine learning is used at any stage.
+A lightweight statistical detector that monitors Keto authorization request logs in real time. It computes Shannon entropy across the distribution of authorization targets and applies CUSUM to per-service-pair request rates. Alerts are generated when entropy drops by more than 40% (indicating DDoS concentration) or when CUSUM exceeds 5σ (indicating a slow-ramp attack or lateral movement probe).  is used at any stage.
 
 **Contribution 3 — Formal Verification of Zanzibar Authorization Policies (FV-Zanzibar):**
 A TLA+ specification of the Keto authorization model, including the tuple graph structure, the recursive check algorithm, and the mutation operations (tuple add/remove). Two safety invariants are specified and verified using TLC model checking: NoPrivilegeEscalation and NoLateralMovement. This is the first formal verification of Zanzibar-style authorization policies published in the academic literature.

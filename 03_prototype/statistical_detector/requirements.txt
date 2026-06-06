@@ -21,7 +21,7 @@ scipy==1.11.4
 # https://www.structlog.org/
 structlog==23.2.0
 
-# NOTE: The detector intentionally uses NO ML libraries.
+# NOTE: The detector intentionally uses  libraries.
 # The following are NOT required and should NOT be installed:
 #   scikit-learn, tensorflow, torch, keras, xgboost, lightgbm
 

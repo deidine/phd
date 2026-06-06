@@ -11,7 +11,7 @@ Description:
     1. Shannon entropy (Nychis et al., 2008) — detects DDoS concentration
     2. CUSUM (Blazek et al., 2001)          — detects slow-ramp attacks
 
-    NO MACHINE LEARNING. Pure statistical methods.
+    . Pure statistical methods.
 
 References:
     - Chandola et al. (2009) ACM Surveys: https://doi.org/10.1145/1541880.1541882
@@ -251,7 +251,7 @@ class StatisticalDetector:
 
     def run(self):
         """Tail the Keto log file and process events in real time."""
-        log.info("Statistical Anomaly Detector started (no ML)")
+        log.info("Statistical Anomaly Detector started ")
         log.info("Methods: Shannon entropy + CUSUM")
         log.info(f"References:")
         log.info(f"  Chandola (2009): https://doi.org/10.1145/1541880.1541882")

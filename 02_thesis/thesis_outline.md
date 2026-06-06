@@ -21,7 +21,7 @@ endpoints (easily mapped by attackers), unverified authorization policies
 producing opaque decisions).
 
 This thesis proposes a three-layer security framework for distributed
-microservices that uses no machine learning. The first layer, the MTD Engine
+microservices that uses . The first layer, the MTD Engine
 for Kubernetes (MKE), periodically rotates service endpoints to invalidate
 attacker reconnaissance. The second layer, the Statistical Authorization
 Anomaly Detector (SAAD), monitors Ory Keto authorization request logs using
@@ -116,4 +116,4 @@ verification for authorization security.
 | MTD rotation interval | 60 seconds | Best MTTC/disruption trade-off (experimental) |
 | Statistical methods | Entropy + CUSUM | Complementary: entropy catches concentration, CUSUM catches slow ramps |
 | Formal language | TLA+ | Best for distributed system invariants; free tooling; AWS validation |
-| No ML | Deliberate choice | Interpretability, no training data, adversarial robustness |
+|  | Deliberate choice | Interpretability, no training data, adversarial robustness |
