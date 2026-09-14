@@ -44,7 +44,7 @@ Using network traffic simulation with embedded DoS attacks, the authors show:
 - Outperforms threshold-only detection (which misses slow-ramp attacks)
 - Does not require any labelled attack data for training
 
-**Why this matters for my thesis:** No training data =  needed.
+**Why this matters for my thesis:** No training data = no ML needed.
 CUSUM computes its own baseline from the first N minutes of normal traffic.
 
 ---

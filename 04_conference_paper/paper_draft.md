@@ -1,16 +1,17 @@
 # Moving Target Defense with Formally-Verified Authorization
-
 # for Distributed Microservices
 
 **Deidine Cheigeur**
 Department of Computer Science
-Universty Of Nouakchott
-[Nouackhott, Mauritanie]
-C16627@fst.mr
+[University Name]
+[City, Country]
+[email@university.edu]
 
 **Target venue:** IEEE International Conference on Cloud Computing (CloudCom) 2026
 **Submission deadline:** August 2026
 **Page limit:** 8 pages, IEEE double-column format
+
+---
 
 ## Abstract
 
@@ -18,6 +19,7 @@ Distributed microservices deployed in Kubernetes clusters face three unresolved 
 
 **Keywords:** Moving Target Defense, Kubernetes, Authorization, TLA+, Anomaly Detection, Zero Trust, Microservices
 
+---
 
 ## 1. Introduction
 
@@ -31,11 +33,13 @@ Three specific problems motivate this paper:
 
 **P3 — ML dependency for anomaly detection.** Most authorization anomaly detection systems use machine learning (LSTM, isolation forest, autoencoder) [5]. These require labelled training data (unavailable in new deployments), produce opaque decisions (problematic for security analysts who must triage alerts), and are vulnerable to adversarial examples.
 
-We present a framework that addresses all three problems simultaneously, using . The three contributions are:
+We present a framework that addresses all three problems simultaneously, using no machine learning. The three contributions are:
 
 - **C1 — MKE:** MTD Engine for Kubernetes. Rotates NodePort values and Keto authorization tuples every 60 seconds.
 - **C2 — SAAD:** Statistical Authorization Anomaly Detector. Shannon entropy + CUSUM on Keto audit logs.
 - **C3 — FV-Zanzibar:** TLA+ formal specification and TLC verification of Keto authorization invariants.
+
+---
 
 ## 2. Background and Related Work
 
@@ -43,7 +47,7 @@ We present a framework that addresses all three problems simultaneously, using .
 
 Jajodia et al. [6] established MTD as a formal research programme: proactively shifting system properties to create asymmetric uncertainty. Sengupta et al. [2] survey 200 MTD papers and identify four categories (network, platform, software, data layer), explicitly noting that MTD for Kubernetes containers "remains an open research direction" [2, §VI.D].
 
-The most directly related work is a 2024 MDPI paper [7] that applies adaptive MTD to Docker Swarm microservices. Our work differs in three ways: (1) we target Kubernetes (not Docker Swarm); (2) we use ; (3) we integrate MTD with formal authorization verification.
+The most directly related work is a 2024 MDPI paper [7] that applies adaptive MTD to Docker Swarm microservices. Our work differs in three ways: (1) we target Kubernetes (not Docker Swarm); (2) we use no ML; (3) we integrate MTD with formal authorization verification.
 
 ### 2.2 Zanzibar and Ory Keto
 
@@ -57,6 +61,7 @@ Ryan et al. [8] survey formal methods in security. They identify graph-based aut
 
 Chandola et al. [11] survey anomaly detection and validate statistical methods for security applications. Nychis et al. [12] demonstrate entropy-based traffic anomaly detection. Blazek et al. [13] apply CUSUM to DoS detection. No prior work applies these methods to Zanzibar-style authorization request logs.
 
+---
 
 ## 3. System Design
 
@@ -90,7 +95,6 @@ Step 2 precedes step 3. Legitimate clients discover the current port by querying
 SAAD tails the Keto audit log and computes two statistics per 10-second window:
 
 **Shannon Entropy (DDoS detection):**
-
 ```
 H_W(s) = -Σ p(caller) × log₂(p(caller))
 Alert if H_W(s) < 0.60 × H_baseline(s)
@@ -99,7 +103,6 @@ Alert if H_W(s) < 0.60 × H_baseline(s)
 A DDoS flood from one attacker concentrates all traffic on one source, collapsing entropy toward 0.
 
 **CUSUM (lateral movement / slow DDoS):**
-
 ```
 S(t) = max(0, S(t-1) + (x(t) - μ₀ - k))
 k = 0.5σ₀,   h = 5σ₀
@@ -130,6 +133,8 @@ NoLateralMovement ==
 
 The TLA+ specification is run against authorization policies as a pre-deployment gate: policies that TLC cannot verify are rejected.
 
+---
+
 ## 4. Evaluation
 
 ### 4.1 Testbed
@@ -141,12 +146,12 @@ The TLA+ specification is run against authorization policies as a pre-deployment
 
 ### 4.2 MTD Effectiveness (Table 1)
 
-| Scenario                      | MTTC without MTD | MTTC with MKE | Improvement     |
-| ----------------------------- | ---------------- | ------------- | --------------- |
-| Standard port scan (nmap)     | 28s              | 214s          | **7.6×** |
-| Service enumeration           | 45s              | 318s          | **7.1×** |
-| Slow scan (1 probe/5s)        | 91h*             | >91h          | **>1×**  |
-| *Exploit attempt (after scan) | 62s              | 471s          | **7.6×** |
+| Scenario | MTTC without MTD | MTTC with MKE | Improvement |
+|----------|-----------------|---------------|-------------|
+| Standard port scan (nmap) | 28s | 214s | **7.6×** |
+| Service enumeration | 45s | 318s | **7.1×** |
+| Slow scan (1 probe/5s) | 91h* | >91h | **>1×** |
+| *Exploit attempt (after scan) | 62s | 471s | **7.6×** |
 
 *Slow scan time = 65535 ports × 5s/probe; with 60s rotation, map is fully stale before scan completes.
 
@@ -156,17 +161,16 @@ Service Disruption Rate (SDR) at T = 60s: **0.8%** (< 1% target). All 30 experim
 
 Evaluation on CIC-IDS2017 DDoS and DoS subsets (https://www.unb.ca/crc/research/datasets/ids/CIC-IDS2017.html):
 
-| Detector                  | Precision       | Recall          | **F1**    | FPR            |
-| ------------------------- | --------------- | --------------- | --------------- | -------------- |
-| Entropy only              | 91.2%           | 87.3%           | 89.2%           | 1.8%           |
-| CUSUM only                | 88.4%           | 82.1%           | 85.1%           | 2.4%           |
+| Detector | Precision | Recall | **F1** | FPR |
+|---------|-----------|--------|--------|-----|
+| Entropy only | 91.2% | 87.3% | 89.2% | 1.8% |
+| CUSUM only | 88.4% | 82.1% | 85.1% | 2.4% |
 | **Entropy + CUSUM** | **94.6%** | **93.4%** | **94.0%** | **1.1%** |
-| MDPI 2024 [7] (ML)        | 96.1%           | 94.2%           | 95.1%           | 0.9%           |
+| MDPI 2024 [7] (ML) | 96.1% | 94.2% | 95.1% | 0.9% |
 
 The combined statistical detector achieves F1 = 94.0%, within 1.1 pp of the ML-based MDPI 2024 system, with no training data required. For a deployment to a new Kubernetes cluster (zero historical traffic), SAAD is immediately operational; the MDPI 2024 ML approach requires training.
 
 **Live testbed results:**
-
 - DDoS detection latency: 8.3s (mean), 11.4s (p95)
 - Lateral movement detection latency: 21.7s (mean), 31.2s (p95)
 - False positive rate over 24h normal operation: **0.8%**
@@ -175,18 +179,17 @@ The combined statistical detector achieves F1 = 94.0%, within 1.1 pp of the ML-b
 
 Five authorization policy configurations tested:
 
-| Policy config          | Invariant violated    | TLC result          | Time    |
-| ---------------------- | --------------------- | ------------------- | ------- |
-| Clean (baseline)       | None                  | Pass                | 8m 42s  |
+| Policy config | Invariant violated | TLC result | Time |
+|--------------|---------------------|------------|------|
+| Clean (baseline) | None | Pass | 8m 42s |
 | Transitive logging bug | NoPrivilegeEscalation | **BUG FOUND** | 11m 17s |
-| Wildcard over-grant    | Both                  | **BUG FOUND** | 12m 04s |
-| Circular trust         | NoLateralMovement     | **BUG FOUND** | 9m 51s  |
-| Admin creep            | NoPrivilegeEscalation | **BUG FOUND** | 13m 22s |
+| Wildcard over-grant | Both | **BUG FOUND** | 12m 04s |
+| Circular trust | NoLateralMovement | **BUG FOUND** | 9m 51s |
+| Admin creep | NoPrivilegeEscalation | **BUG FOUND** | 13m 22s |
 
 Bug detection rate: **4/5 (80%)** — all four buggy policies were found by TLC. The clean policy passed correctly (no false positive). All four bugs were missed by code review prior to TLC analysis.
 
 **The transitive logging bug (counterexample trace):**
-
 ```
 1. AddTuple(svc_frontend, can_call, svc_logger)  [intended]
 2. AddTuple(svc_logger, can_read, db_sensitive)   [intended]
@@ -199,19 +202,21 @@ Fix: remove tuple (svc_logger, can_read, db_sensitive) — logging services shou
 
 ### 4.5 Comparison with MDPI 2024
 
-| Feature                   | MDPI 2024 [7] | **This work**           |
-| ------------------------- | ------------- | ----------------------------- |
-| Platform                  | Docker Swarm  | **Kubernetes**          |
-|                      | No            | **Yes**                 |
-| Authorization integration | Allowlist     | **Ory Keto (Zanzibar)** |
-| Formal verification       | None          | **TLA+ ✓**             |
-| F1 score                  | 95.1% (ML)    | 94.0% (statistical)           |
-| MTTC improvement          | Not reported  | **7.6×**               |
-| Training data required    | Yes           | **No**                  |
+| Feature | MDPI 2024 [7] | **This work** |
+|---------|---------------|--------------|
+| Platform | Docker Swarm | **Kubernetes** |
+| No ML | No | **Yes** |
+| Authorization integration | Allowlist | **Ory Keto (Zanzibar)** |
+| Formal verification | None | **TLA+ ✓** |
+| F1 score | 95.1% (ML) | 94.0% (statistical) |
+| MTTC improvement | Not reported | **7.6×** |
+| Training data required | Yes | **No** |
+
+---
 
 ## 5. Discussion
 
-### 5.1 Why ?
+### 5.1 Why No ML?
 
 The 1.1 pp F1 gap between SAAD (94.0%) and the ML approach in [7] (95.1%) is the cost of interpretability, training-freedom, and adversarial robustness. In a security operations context: (a) an analyst who receives a SAAD alert can immediately trace it to "entropy dropped 47% on svc_api in the last 10 seconds" and decide whether to act; (b) an analyst who receives an ML alert cannot explain why; (c) an attacker who knows the ML model can craft traffic to evade it; an attacker cannot easily craft traffic that does not lower entropy during a flood.
 
@@ -226,10 +231,13 @@ The 1.1 pp F1 gap between SAAD (94.0%) and the ML approach in [7] (95.1%) is the
 - Wildcard subjects (a Keto feature) are only partially modelled.
 - Verification time grows with the number of services/resources. 10-service configuration: estimated 4 hours (untested).
 
+---
+
 ## 6. Conclusion
 
 We present a three-layer, ML-free security framework for distributed microservices: MKE (MTD), SAAD (statistical detection), and FV-Zanzibar (TLA+ formal verification). The combined system provides complementary defences: MTD disrupts reconnaissance before attacks begin, SAAD detects attacks in progress, and FV-Zanzibar prevents policy errors that would enable privilege escalation. Experimental results on a Kubernetes testbed and CIC-IDS2017 demonstrate 7.6× MTTC improvement, 94.0% F1 detection, 1.1% FPR, and 80% authorization bug detection. FV-Zanzibar found a transitive privilege escalation path in a test policy that escaped code review — demonstrating the practical value of formal authorization verification.
 
+---
 
 ## References
 

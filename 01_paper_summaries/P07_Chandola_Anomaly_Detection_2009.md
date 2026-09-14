@@ -6,7 +6,7 @@
 ---
 
 ## Why I read this
-My Contribution 2 uses statistical anomaly detection .
+My Contribution 2 uses statistical anomaly detection (no ML).
 This survey maps all anomaly detection methods — I need to know
 which statistical approaches are appropriate and why.
 

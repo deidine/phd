@@ -143,7 +143,7 @@ Since Sengupta et al.'s survey (2020), a small number of papers have begun to ad
 **MDPI Future Internet 2024** (DOI: https://doi.org/10.3390/fi17120580) — proposes adaptive MTD policies for microservices to mitigate DDoS. The paper demonstrates port rotation in a Docker Swarm environment and uses ML-based policy adaptation.
 
 This thesis differentiates from the MDPI 2024 paper in three key ways:
-1. **:** this thesis uses statistical methods; MDPI 2024 uses ML-based policy selection
+1. **No ML:** this thesis uses statistical methods; MDPI 2024 uses ML-based policy selection
 2. **Formal verification:** this thesis verifies authorization invariants with TLA+; MDPI 2024 has no formal component
 3. **Authorization integration:** this thesis integrates MTD rotation with Ory Keto (Zanzibar-based authorization); MDPI 2024 uses a simple allowlist
 
@@ -366,7 +366,7 @@ This section synthesizes the literature to identify the three specific gaps that
 | Feature | Sengupta 2020 | MDPI 2024 | Zanzibar 2019 | **This Thesis** |
 |---------|--------------|-----------|--------------|----------------|
 | MTD in Kubernetes | Not done | Docker Swarm | N/A | **Kubernetes ✓** |
-|  | N/A | Uses ML | N/A | ** ✓** |
+| No ML | N/A | Uses ML | N/A | **No ML ✓** |
 | Authorization integration | No | No | Yes (static) | **Yes (dynamic) ✓** |
 | Formal verification | No | No | No | **TLA+ ✓** |
 | Statistical detection | No | ML only | No | **Entropy+CUSUM ✓** |

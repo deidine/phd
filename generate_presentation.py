@@ -1,7 +1,7 @@
 """
 PhD Thesis Proposal Presentation
 Moving Target Defense & Formal Authorization Verification
-for Securing Distributed Microservices — 
+for Securing Distributed Microservices — NO Machine Learning
 """
 
 from pptx import Presentation
@@ -54,7 +54,7 @@ def s1(prs):
       0.65, 0.42, 9, 0.45, size=12, color=GREY)
     t(sl, "Moving Target Defense\n& Formal Authorization Verification\nfor Securing Distributed Microservices",
       0.65, 0.9, 9.1, 2.6, size=28, bold=True, color=WHITE)
-    t(sl, "  ·  Algorithmic Security  ·  Formal Methods",
+    t(sl, "No Machine Learning  ·  Algorithmic Security  ·  Formal Methods",
       0.65, 3.55, 9, 0.5, size=15, color=TEAL)
     box(sl, 0.65, 4.35, 5.5, 0.06, RED)
     t(sl, "Deidine Cheigeur  ·  June 2026", 0.65, 4.5, 6, 0.45, size=14, color=GREY)
@@ -96,7 +96,7 @@ def s3(prs):
         ("C1 — Moving Target Defense", BLUE,
          "Kubernetes controller that\nperiodically rotates service\nendpoints, IPs & API paths.\nAttacker maps → system changes."),
         ("C2 — Statistical Detection", TEAL,
-         "Shannon entropy + CUSUM\ncontrol charts on authorization\nlogs. Pure math. .\nDetects DDoS & privilege probing."),
+         "Shannon entropy + CUSUM\ncontrol charts on authorization\nlogs. Pure math. No ML.\nDetects DDoS & privilege probing."),
         ("C3 — Formal Verification", PURPLE,
          "TLA+ model of Zanzibar/Keto\nauthorization graph.\nProves: no privilege escalation,\nno lateral movement possible."),
     ]
@@ -143,7 +143,7 @@ def s4(prs):
 def s5(prs):
     sl = prs.slides.add_slide(prs.slide_layouts[6]); bg(sl, DARK)
     box(sl, 0, 0, 10, 1.1, BLUE)
-    t(sl, "METHODOLOGY  —  ", 0.4, 0.3, 9, 0.55, size=26, bold=True)
+    t(sl, "METHODOLOGY  —  No Machine Learning", 0.4, 0.3, 9, 0.55, size=26, bold=True)
     steps = [
         ("MTD Engine", BLUE,
          ["Kubernetes Python controller", "Rotates ClusterIPs + ports every 60s",
@@ -187,7 +187,7 @@ def s6(prs):
         "TLA+ Toolbox / VS Code", "minikube + kubectl",
         "GitHub Actions CI"],
        6.3, 1.25, 3.4, 4.6,
-       title="Tech Stack ", tc=TEAL)
+       title="Tech Stack (No ML)", tc=TEAL)
     box(sl, 0.4, 6.1, 9.2, 0.95, BLUE)
     t(sl,
       "Goal: MTD reduces attacker mean-time-to-exploit by > 80%  ·  "
@@ -250,7 +250,7 @@ def s8(prs):
       0.45, 5.9, 9.0, 0.4, size=12, bold=True, color=TEAL)
     t(sl,
       '"My thesis secures distributed microservices using Moving Target Defense '
-      '(rotate endpoints in Kubernetes), statistical detection (entropy + CUSUM, ), '
+      '(rotate endpoints in Kubernetes), statistical detection (entropy + CUSUM, no ML), '
       'and TLA+ formal verification of Zanzibar/Keto authorization policies — '
       'proving no privilege escalation or lateral movement is possible."',
       0.45, 6.3, 9.0, 0.85, size=11, color=WHITE)

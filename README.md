@@ -12,7 +12,7 @@
 
 ## Research Summary
 
-This thesis proposes a three-layer security framework for distributed microservices that uses ****. It addresses three open problems in cloud-native security:
+This thesis proposes a three-layer security framework for distributed microservices that uses **no machine learning**. It addresses three open problems in cloud-native security:
 
 | Problem | Solution | Key result |
 |---------|----------|------------|
@@ -23,7 +23,7 @@ This thesis proposes a three-layer security framework for distributed microservi
 **Authorization platform:** Ory Keto — open-source Google Zanzibar implementation
 GitHub: https://github.com/ory/keto
 
-** used anywhere in this thesis.** All detection is statistical; all verification is formal.
+**No ML used anywhere in this thesis.** All detection is statistical; all verification is formal.
 
 ---
 
