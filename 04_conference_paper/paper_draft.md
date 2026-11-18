@@ -184,10 +184,10 @@ Five authorization policy configurations were specified in TLA+ (`Authorization.
 | Policy config | Invariant violated | TLC result | Where found | Wall time |
 |--------------|---------------------|------------|------|------|
 | Baseline (clean) | None | Pass | n/a — 8 distinct states | <1s |
-| Transitive logging bug | NoPrivilegeEscalation | BUG FOUND | static, at Init, 2-hop | <1s |
-| Wildcard over-grant | NoPrivilegeEscalation | BUG FOUND | static, at Init, 1-hop | <1s |
-| Admin creep | NoLateralMovement | BUG FOUND | after compromise, depth 3 | <1s |
-| Circular trust | NoLateralMovement | BUG FOUND | after compromise, depth 3 | <1s |
+| Transitive logging bug | `NoPrivilegeEscalation` | BUG FOUND | static, at Init, 2-hop | <1s |
+| Wildcard over-grant | `NoPrivilegeEscalation` | BUG FOUND | static, at Init, 1-hop | <1s |
+| Admin creep | `NoLateralMovement` | BUG FOUND | after compromise, depth 3 | <1s |
+| Circular trust | `NoLateralMovement` | BUG FOUND | after compromise, depth 3 | <1s |
 
 Bug detection rate: **4/5 (80%)**. The clean baseline passed with no false positive; all four deliberately-flawed policies were found by TLC.
 
