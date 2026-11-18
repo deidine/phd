@@ -8,8 +8,6 @@ Nouakchott, Mauritania
 c16627@fst.e_una.mr
 
 **Target venue:** IEEE International Conference on Cloud Computing (CloudCom) 2026
-**Submission deadline:** August 2026
-**Page limit:** 8 pages, IEEE double-column format
 
 ---
 
@@ -33,7 +31,7 @@ Three specific problems motivate this paper:
 
 **P3 — ML dependency for anomaly detection.** Most authorization anomaly detection systems use machine learning (LSTM, isolation forest, autoencoder) [5]. These require labelled training data (unavailable in new deployments), produce opaque decisions (problematic for security analysts who must triage alerts), and are vulnerable to adversarial examples.
 
-We present a framework that addresses all three problems simultaneously, using no machine learning. The three contributions are:
+We present a framework that addresses all three problems simultaneously, relying on statistical and formal-verification techniques rather than machine learning. The three contributions are:
 
 - **C1 — MKE:** MTD Engine for Kubernetes. Rotates NodePort values and Keto authorization tuples every 60 seconds.
 - **C2 — SAAD:** Statistical Authorization Anomaly Detector. Shannon entropy + CUSUM on Keto audit logs.
@@ -47,7 +45,7 @@ We present a framework that addresses all three problems simultaneously, using n
 
 Jajodia et al. [6] established MTD as a formal research programme: proactively shifting system properties to create asymmetric uncertainty. Sengupta et al. [2] survey 200 MTD papers and identify four categories (network, platform, software, data layer), explicitly noting that MTD for Kubernetes containers "remains an open research direction" [2, §VI.D].
 
-The most directly related work is a 2024 MDPI paper [7] that applies adaptive MTD to Docker Swarm microservices. Our work differs in three ways: (1) we target Kubernetes (not Docker Swarm); (2) we use no ML; (3) we integrate MTD with formal authorization verification.
+The most directly related work is a 2024 MDPI paper [7] that applies adaptive MTD to Docker Swarm microservices. Our work differs in three ways: (1) we target Kubernetes (not Docker Swarm); (2) our detection layer is statistical rather than ML-based; (3) we integrate MTD with formal authorization verification.
 
 ### 2.2 Zanzibar and Ory Keto
 
@@ -137,7 +135,7 @@ The TLA+ specification is run against authorization policies as a pre-deployment
 
 ## 4. Evaluation
 
-**Reproducibility status.** Section 4.4 (FV-Zanzibar / TLA+) reports results that were actually re-run for this draft and are reproducible from the artifact (`03_prototype/tla_specs/`, raw TLC logs under `results/`). Sections 4.2–4.3 (MKE live testbed, SAAD on CIC-IDS2017) describe experiments **not yet executed** — no k8s manifests, nmap logs, CIC-IDS2017 run artifacts, or statistical tests currently exist in the repository to support these numbers. They are retained below as the planned methodology and target figures, not as confirmed results, and must not be cited as measured outcomes until the testbed in 4.1 is actually built and run.
+**Reproducibility status.** Section 4.4 (FV-Zanzibar / TLA+) reports results that were re-run for this draft and are reproducible from the artifact (`03_prototype/tla_specs/`, raw TLC logs under `results/`). Sections 4.2–4.3 (MKE live testbed, SAAD on CIC-IDS2017) describe experiments **not yet executed** — no k8s manifests, nmap logs, CIC-IDS2017 run artifacts, or statistical tests currently exist in the repository to support these numbers. They are retained below as the planned methodology and target figures, not as confirmed results, and must not be cited as measured outcomes until the testbed in 4.1 is built and run.
 
 ### 4.1 Testbed
 
@@ -179,7 +177,7 @@ The combined statistical detector achieves F1 = 94.0%, within 1.1 pp of the ML-b
 
 ### 4.4 FV-Zanzibar Results (Table 3)
 
-Five authorization policy configurations were specified in TLA+ (`Authorization.tla` + `Scenarios.tla`, 2–3 services each) and checked with TLC 2.19. All wall-clock times below are genuine, reproduced runs (raw TLC output for each is included in the artifact under `tla_specs/results/`), not estimates — these are deliberately small, hand-built models, so sub-second checking time is expected and is not itself a scalability claim:
+Five authorization policy configurations were specified in TLA+ (`Authorization.tla` + `Scenarios.tla`, 2–3 services each) and checked with TLC 2.19. All wall-clock times below are measured, reproduced runs (raw TLC output for each is included in the artifact under `tla_specs/results/`), not estimates — these are deliberately small, hand-built models, so sub-second checking time is expected and is not itself a scalability claim:
 
 | Policy config | Invariant violated | TLC result | Where found | Wall time |
 |--------------|---------------------|------------|------|------|
@@ -193,7 +191,7 @@ Bug detection rate: **4/5 (80%)**. The clean baseline passed with no false posit
 
 **Transitive logging bug (static violation, no attacker steps required):** `svc_frontend` (level 1) has no *direct* tuple to `db_sensitive` (level 3), but reaches it in two hops through `svc_logger` (level 1): `svc_frontend --can_call--> svc_logger --can_write--> db_sensitive`. A reviewer checking each edge in isolation sees nothing wrong; `ReachableFromOriginal` computes the transitive closure and TLC reports `NoPrivilegeEscalation` violated at the initial state itself — PERMISSION_LEVEL[svc_frontend]=1 < PERMISSION_LEVEL[db_sensitive]=3.
 
-**Circular trust bug (genuine attacker-reachable counterexample, from the real TLC trace):**
+**Circular trust bug (attacker-reachable counterexample, from the TLC trace):**
 ```
 State 1 (Init): svc_a--can_grant-->svc_b, svc_b--can_grant-->svc_c,
                 svc_c--can_grant-->svc_a (ring), plus svc_c--can_write-->db_sensitive
@@ -212,7 +210,7 @@ Fix (transitive logging): remove the `svc_logger --can_write--> db_sensitive` tu
 | Feature | MDPI 2024 [7] | **This work** |
 |---------|---------------|--------------|
 | Platform | Docker Swarm | **Kubernetes** |
-| No ML | No | **Yes** |
+| Machine-learning dependency | Yes | **No** |
 | Authorization integration | Allowlist | **Ory Keto (Zanzibar)** |
 | Formal verification | None | **TLA+ ✓** |
 | F1 score | 95.1% (ML) | 94.0% (statistical) |
@@ -223,7 +221,7 @@ Fix (transitive logging): remove the `svc_logger --can_write--> db_sensitive` tu
 
 ## 5. Discussion
 
-### 5.1 Why No ML?
+### 5.1 Rationale for Statistical Rather Than ML-Based Detection
 
 The 1.1 pp F1 gap between SAAD (94.0%) and the ML approach in [7] (95.1%) is the cost of interpretability, training-freedom, and adversarial robustness. In a security operations context: (a) an analyst who receives a SAAD alert can immediately trace it to "entropy dropped 47% on svc_api in the last 10 seconds" and decide whether to act; (b) an analyst who receives an ML alert cannot explain why; (c) an attacker who knows the ML model can craft traffic to evade it; an attacker cannot easily craft traffic that does not lower entropy during a flood.
 
@@ -242,7 +240,7 @@ The 1.1 pp F1 gap between SAAD (94.0%) and the ML approach in [7] (95.1%) is the
 
 ## 6. Conclusion
 
-We present a three-layer, ML-free security framework for distributed microservices: MKE (MTD), SAAD (statistical detection), and FV-Zanzibar (TLA+ formal verification). The combined system provides complementary defences: MTD disrupts reconnaissance before attacks begin, SAAD detects attacks in progress, and FV-Zanzibar prevents policy errors that would enable privilege escalation. FV-Zanzibar, the one component fully evaluated so far, found and reproduced four genuine authorization bugs (80% of tested configurations) using the TLC model checker — including a transitive privilege escalation path and a circular-trust ring of authorization grants that escaped manual review — demonstrating the practical value of formal authorization verification. The MKE (7.6× MTTC improvement) and SAAD (94.0% F1, 1.1% FPR) figures reported in this draft are target results for the live-testbed and CIC-IDS2017 evaluation described in Section 4, which remains to be executed; completing that evaluation is the immediate next step before submission.
+We present a three-layer security framework for distributed microservices, built on statistical and formal-verification techniques rather than machine learning: MKE (MTD), SAAD (statistical detection), and FV-Zanzibar (TLA+ formal verification). The combined system provides complementary defences: MTD disrupts reconnaissance before attacks begin, SAAD detects attacks in progress, and FV-Zanzibar prevents policy errors that would enable privilege escalation. FV-Zanzibar, the one component fully evaluated so far, identified and reproduced four authorization policy violations (80% of tested configurations) using the TLC model checker — including a transitive privilege escalation path and a circular-trust ring of authorization grants that escaped manual review — demonstrating the practical value of formal authorization verification. The MKE (7.6× MTTC improvement) and SAAD (94.0% F1, 1.1% FPR) figures reported in this draft are target results for the live-testbed and CIC-IDS2017 evaluation described in Section 4, which remains to be executed; completing that evaluation is the immediate next step before submission.
 
 ---
 

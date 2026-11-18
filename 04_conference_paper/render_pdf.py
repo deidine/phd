@@ -1,7 +1,3 @@
-# Renders paper_draft.md as a two-column, Times-based academic PDF (no LaTeX
-# needed, uses macOS system fonts). Usage:
-#   pip install reportlab fonttools
-#   python3 render_pdf.py paper_draft.md paper_draft.pdf
 import re
 import sys
 
@@ -15,7 +11,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, FrameBreak,
-    Table, TableStyle, XPreformatted, NextPageTemplate,
+    Table, TableStyle, XPreformatted, KeepTogether, NextPageTemplate,
 )
 
 FONT_DIR = "/System/Library/Fonts/Supplemental/"
