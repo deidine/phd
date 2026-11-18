@@ -30,6 +30,8 @@
     java -jar <path-to>/tla2tools.jar -deadlock -config Baseline.cfg Scenarios.tla
     java -jar <path-to>/tla2tools.jar -deadlock -config TransitiveLogging.cfg Scenarios.tla
     java -jar <path-to>/tla2tools.jar -deadlock -config AdminCreep.cfg Scenarios.tla
+    java -jar <path-to>/tla2tools.jar -deadlock -config WildcardOvergrant.cfg Scenarios.tla
+    java -jar <path-to>/tla2tools.jar -deadlock -config CircularTrust.cfg Scenarios.tla
 
   tla2tools.jar (official TLA+ tools release):
     https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar

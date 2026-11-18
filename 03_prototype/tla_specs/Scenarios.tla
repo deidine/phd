@@ -69,4 +69,56 @@ AC_INITIAL_TUPLES ==
     <<"svc_db", "can_write", "db_sensitive">>,
     <<"svc_logger", "can_grant", "db_sensitive">> }
 
+\* ============================================================================
+\* WildcardOvergrant — models the effect of an over-broad Keto wildcard
+\* subject_set grant (e.g. "group:internal#member" intended for trusted
+\* backend services) that was mistakenly extended to include a public-facing
+\* service. svc_frontend ends up with a DIRECT can_read tuple to the
+\* level-3 database (not a transitive path like TransitiveLogging) plus a
+\* can_grant tuple it should never have held. This is the simplest possible
+\* bug shape — a single bad edge, visible at Init with zero attacker steps —
+\* and should violate NoPrivilegeEscalation immediately; the extra can_grant
+\* tuple additionally lets a compromised svc_frontend self-grant new access
+\* into svc_db, violating NoLateralMovement too.
+\* Full Keto wildcard subject_set syntax is not modelled (see thesis
+\* limitations) — this models only the net *effect* a wildcard over-grant has
+\* on the resulting tuple set.
+\* ============================================================================
+WO_SERVICES  == {"svc_frontend", "svc_db"}
+WO_RESOURCES == {"db_sensitive"}
+WO_RELATIONS == {"can_call", "can_read", "can_write", "can_grant"}
+WO_PERMISSION_LEVEL ==
+  [svc_frontend |-> 1, svc_db |-> 3, db_sensitive |-> 3]
+WO_INITIAL_TUPLES ==
+  { <<"svc_frontend", "can_read", "db_sensitive">>,
+    <<"svc_frontend", "can_grant", "svc_db">>,
+    <<"svc_db", "can_write", "db_sensitive">> }
+
+\* ============================================================================
+\* CircularTrust — three services hold a RING of mutual "can_grant" rights
+\* (a grants over b, b grants over c, c grants over a), each edge added
+\* independently over time for ordinary operational reasons (e.g. mutual
+\* on-call administration) and each looking harmless reviewed in isolation,
+\* since can_grant alone confers no direct read/call/write reach. The ring
+\* crosses a trust boundary: svc_c (level 3) legitimately owns db_sensitive,
+\* but also sits in the same can_grant ring as the two level-1 services. A
+\* reviewer checking "does A's grant over B look dangerous" one edge at a
+\* time never sees that the ring lets a compromised low-trust node reach
+\* into the high-trust node's grant rights. Unlike AdminCreep (one bad
+\* over-grant directly onto the sensitive resource's owner), the flaw here
+\* is distributed across three independently-looking-fine edges.
+\* ============================================================================
+CT_SERVICES  == {"svc_a", "svc_b", "svc_c"}
+CT_RESOURCES == {"db_sensitive"}
+CT_RELATIONS == {"can_call", "can_read", "can_write", "can_grant"}
+CT_PERMISSION_LEVEL ==
+  [svc_a |-> 1, svc_b |-> 1, svc_c |-> 3, db_sensitive |-> 3]
+CT_INITIAL_TUPLES ==
+  { <<"svc_a", "can_call", "svc_b">>,
+    <<"svc_b", "can_call", "svc_a">>,
+    <<"svc_c", "can_write", "db_sensitive">>,
+    <<"svc_a", "can_grant", "svc_b">>,
+    <<"svc_b", "can_grant", "svc_c">>,
+    <<"svc_c", "can_grant", "svc_a">> }
+
 ========================================================================================

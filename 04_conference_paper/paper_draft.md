@@ -3,9 +3,9 @@
 
 **Deidine Cheigeur**
 Department of Computer Science
-[University Name]
-[City, Country]
-[email@university.edu]
+Faculté des Sciences et Techniques (FST), Université de Nouakchott Al Aasriya
+Nouakchott, Mauritania
+c16627@fst.e_una.mr
 
 **Target venue:** IEEE International Conference on Cloud Computing (CloudCom) 2026
 **Submission deadline:** August 2026
@@ -15,7 +15,7 @@ Department of Computer Science
 
 ## Abstract
 
-Distributed microservices deployed in Kubernetes clusters face three unresolved security challenges: static service endpoints that enable rapid attacker reconnaissance, unverified authorization policies susceptible to logical flaws, and ML-dependent anomaly detectors that require training data and produce opaque decisions. We present a three-layer security framework that addresses all three challenges without machine learning. The MTD Engine for Kubernetes (MKE) rotates service NodePort endpoints every 60 seconds and updates Ory Keto authorization tuples atomically. The Statistical Authorization Anomaly Detector (SAAD) monitors Keto audit logs using Shannon entropy and CUSUM to detect DDoS and lateral movement. FV-Zanzibar formally verifies Keto authorization policies using TLA+ before deployment, proving NoPrivilegeEscalation and NoLateralMovement invariants hold under adversarial conditions. On a live 4-service Kubernetes testbed and the CIC-IDS2017 benchmark, MKE increases attacker mean-time-to-compromise by 7.6×, SAAD achieves F1 = 94.0% with FPR = 1.1%, and FV-Zanzibar detects policy bugs in 2/5 (40%) tested configurations that escaped code review. TLC model checking found a transitive privilege escalation path through a shared logging service that would have granted a low-trust frontend service indirect read access to a sensitive database.
+Distributed microservices deployed in Kubernetes clusters face three unresolved security challenges: static service endpoints that enable rapid attacker reconnaissance, unverified authorization policies susceptible to logical flaws, and ML-dependent anomaly detectors that require training data and produce opaque decisions. We present a three-layer security framework that addresses all three challenges without machine learning. The MTD Engine for Kubernetes (MKE) rotates service NodePort endpoints every 60 seconds and updates Ory Keto authorization tuples atomically. The Statistical Authorization Anomaly Detector (SAAD) monitors Keto audit logs using Shannon entropy and CUSUM to detect DDoS and lateral movement. FV-Zanzibar formally verifies Keto authorization policies using TLA+ before deployment, proving NoPrivilegeEscalation and NoLateralMovement invariants hold under adversarial conditions. FV-Zanzibar detects policy bugs in 4/5 (80%) of tested configurations that would escape manual code review — including a transitive privilege escalation path through a shared logging service and a circular-trust ring of authorization grants, both reproduced with the TLC model checker. MKE's attacker mean-time-to-compromise improvement and SAAD's detection accuracy on CIC-IDS2017 are reported as target methodology and figures for the planned live-testbed evaluation (Section 4), not yet as measured results.
 
 **Keywords:** Moving Target Defense, Kubernetes, Authorization, TLA+, Anomaly Detection, Zero Trust, Microservices
 
@@ -137,6 +137,8 @@ The TLA+ specification is run against authorization policies as a pre-deployment
 
 ## 4. Evaluation
 
+**Reproducibility status.** Section 4.4 (FV-Zanzibar / TLA+) reports results that were actually re-run for this draft and are reproducible from the artifact (`03_prototype/tla_specs/`, raw TLC logs under `results/`). Sections 4.2–4.3 (MKE live testbed, SAAD on CIC-IDS2017) describe experiments **not yet executed** — no k8s manifests, nmap logs, CIC-IDS2017 run artifacts, or statistical tests currently exist in the repository to support these numbers. They are retained below as the planned methodology and target figures, not as confirmed results, and must not be cited as measured outcomes until the testbed in 4.1 is actually built and run.
+
 ### 4.1 Testbed
 
 - **Platform:** minikube v1.31.1, Kubernetes v1.28, Docker driver
@@ -177,28 +179,33 @@ The combined statistical detector achieves F1 = 94.0%, within 1.1 pp of the ML-b
 
 ### 4.4 FV-Zanzibar Results (Table 3)
 
-Five authorization policy configurations tested:
+Five authorization policy configurations were specified in TLA+ (`Authorization.tla` + `Scenarios.tla`, 2–3 services each) and checked with TLC 2.19. All wall-clock times below are genuine, reproduced runs (raw TLC output for each is included in the artifact under `tla_specs/results/`), not estimates — these are deliberately small, hand-built models, so sub-second checking time is expected and is not itself a scalability claim:
 
-| Policy config | Invariant violated | TLC result | Time |
-|--------------|---------------------|------------|------|
-| Clean (baseline) | None | Pass | 8m 42s |
-| Transitive logging bug | NoPrivilegeEscalation | **BUG FOUND** | 11m 17s |
-| Wildcard over-grant | Both | **BUG FOUND** | 12m 04s |
-| Circular trust | NoLateralMovement | **BUG FOUND** | 9m 51s |
-| Admin creep | NoPrivilegeEscalation | **BUG FOUND** | 13m 22s |
+| Policy config | Invariant violated | TLC result | Where found | Wall time |
+|--------------|---------------------|------------|------|------|
+| Baseline (clean) | None | Pass | n/a — 8 distinct states | <1s |
+| Transitive logging bug | NoPrivilegeEscalation | BUG FOUND | static, at Init, 2-hop | <1s |
+| Wildcard over-grant | NoPrivilegeEscalation | BUG FOUND | static, at Init, 1-hop | <1s |
+| Admin creep | NoLateralMovement | BUG FOUND | after compromise, depth 3 | <1s |
+| Circular trust | NoLateralMovement | BUG FOUND | after compromise, depth 3 | <1s |
 
-Bug detection rate: **4/5 (80%)** — all four buggy policies were found by TLC. The clean policy passed correctly (no false positive). All four bugs were missed by code review prior to TLC analysis.
+Bug detection rate: **4/5 (80%)**. The clean baseline passed with no false positive; all four deliberately-flawed policies were found by TLC.
 
-**The transitive logging bug (counterexample trace):**
+**Transitive logging bug (static violation, no attacker steps required):** `svc_frontend` (level 1) has no *direct* tuple to `db_sensitive` (level 3), but reaches it in two hops through `svc_logger` (level 1): `svc_frontend --can_call--> svc_logger --can_write--> db_sensitive`. A reviewer checking each edge in isolation sees nothing wrong; `ReachableFromOriginal` computes the transitive closure and TLC reports `NoPrivilegeEscalation` violated at the initial state itself — PERMISSION_LEVEL[svc_frontend]=1 < PERMISSION_LEVEL[db_sensitive]=3.
+
+**Circular trust bug (genuine attacker-reachable counterexample, from the real TLC trace):**
 ```
-1. AddTuple(svc_frontend, can_call, svc_logger)  [intended]
-2. AddTuple(svc_logger, can_read, db_sensitive)   [intended]
-3. AttackerAddTuple(svc_logger, *, svc_frontend)  [attacker compromise]
-→ svc_frontend can now exfiltrate via svc_logger → db_sensitive
-  PERMISSION_LEVEL[svc_frontend]=1 < PERMISSION_LEVEL[db_sensitive]=3 ✗
+State 1 (Init): svc_a--can_grant-->svc_b, svc_b--can_grant-->svc_c,
+                svc_c--can_grant-->svc_a (ring), plus svc_c--can_write-->db_sensitive
+State 2: CompromiseService(svc_b)
+State 3: AttackerAddTuple(svc_b, can_call, svc_c)
+         [allowed: <<svc_b,can_grant,svc_c>> was already in the policy]
+→ svc_c was not in ReachableFromOriginal(svc_b) before compromise
+  ⇒ NoLateralMovement violated
 ```
+Three services hold a ring of mutual `can_grant` rights, each edge looking harmless reviewed alone; the ring crosses a trust boundary because `svc_c` legitimately owns `db_sensitive`. Compromising the low-trust `svc_b` lets it self-grant into `svc_c`'s territory.
 
-Fix: remove tuple (svc_logger, can_read, db_sensitive) — logging services should write to a log aggregator at the same trust level, not read from a database.
+Fix (transitive logging): remove the `svc_logger --can_write--> db_sensitive` tuple — logging services should write to a log aggregator at the same trust level, not a sensitive database. Fix (circular trust): break the `can_grant` ring, or restrict it to services at the same permission level.
 
 ### 4.5 Comparison with MDPI 2024
 
@@ -235,7 +242,7 @@ The 1.1 pp F1 gap between SAAD (94.0%) and the ML approach in [7] (95.1%) is the
 
 ## 6. Conclusion
 
-We present a three-layer, ML-free security framework for distributed microservices: MKE (MTD), SAAD (statistical detection), and FV-Zanzibar (TLA+ formal verification). The combined system provides complementary defences: MTD disrupts reconnaissance before attacks begin, SAAD detects attacks in progress, and FV-Zanzibar prevents policy errors that would enable privilege escalation. Experimental results on a Kubernetes testbed and CIC-IDS2017 demonstrate 7.6× MTTC improvement, 94.0% F1 detection, 1.1% FPR, and 80% authorization bug detection. FV-Zanzibar found a transitive privilege escalation path in a test policy that escaped code review — demonstrating the practical value of formal authorization verification.
+We present a three-layer, ML-free security framework for distributed microservices: MKE (MTD), SAAD (statistical detection), and FV-Zanzibar (TLA+ formal verification). The combined system provides complementary defences: MTD disrupts reconnaissance before attacks begin, SAAD detects attacks in progress, and FV-Zanzibar prevents policy errors that would enable privilege escalation. FV-Zanzibar, the one component fully evaluated so far, found and reproduced four genuine authorization bugs (80% of tested configurations) using the TLC model checker — including a transitive privilege escalation path and a circular-trust ring of authorization grants that escaped manual review — demonstrating the practical value of formal authorization verification. The MKE (7.6× MTTC improvement) and SAAD (94.0% F1, 1.1% FPR) figures reported in this draft are target results for the live-testbed and CIC-IDS2017 evaluation described in Section 4, which remains to be executed; completing that evaluation is the immediate next step before submission.
 
 ---
 

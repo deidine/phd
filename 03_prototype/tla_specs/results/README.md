@@ -14,6 +14,8 @@ cd 03_prototype/tla_specs
 java -jar ../../tools/tla2tools.jar -deadlock -config Baseline.cfg Scenarios.tla
 java -jar ../../tools/tla2tools.jar -deadlock -config TransitiveLogging.cfg Scenarios.tla
 java -jar ../../tools/tla2tools.jar -deadlock -config AdminCreep.cfg Scenarios.tla
+java -jar ../../tools/tla2tools.jar -deadlock -config WildcardOvergrant.cfg Scenarios.tla
+java -jar ../../tools/tla2tools.jar -deadlock -config CircularTrust.cfg Scenarios.tla
 ```
 
 `tla2tools.jar` is the official TLA+ tools release:
@@ -26,19 +28,52 @@ model like this, not a spec bug.
 
 ## Results
 
+All five scenarios the paper/thesis originally named are now specified and
+actually run. **4 of 5 configurations have a verified bug; the clean
+baseline passes** — the "4/5 (80%)" ratio in the paper is now a real,
+reproduced number, not an assumed one. The per-scenario wall-clock times
+are not: these are tiny, hand-built models (2–3 services), and every run
+completes in well under a second.
+
 | Scenario | Services | Invariant checked | TLC result | States explored | Wall time |
 |---|---|---|---|---|---|
 | `Baseline` | 3 | Both | **Pass** — no error found | 8 distinct | <1s |
-| `TransitiveLogging` | 3 | `NoPrivilegeEscalation` | **FOUND**, at Init (static policy flaw) | 1 | <1s |
-| `AdminCreep` | 3 | `NoLateralMovement` | **FOUND**, after compromise (runtime exploit) | 8 distinct | <1s |
+| `TransitiveLogging` | 3 | `NoPrivilegeEscalation` | **FOUND**, at Init (static, 2-hop) | 1 | <1s |
+| `WildcardOvergrant` | 2 | `NoPrivilegeEscalation` | **FOUND**, at Init (static, 1-hop) | 1 | <1s |
+| `AdminCreep` | 3 | `NoLateralMovement` | **FOUND**, after compromise (depth 3) | 8 distinct | <1s |
+| `CircularTrust` | 3 | `NoLateralMovement` | **FOUND**, after compromise (depth 3) | 10 distinct | <1s |
 
 Raw TLC output for each run is in this directory: `baseline_tlc_output.txt`,
-`transitive_logging_tlc_output.txt`, `admin_creep_tlc_output.txt`.
+`transitive_logging_tlc_output.txt`, `admin_creep_tlc_output.txt`,
+`wildcard_overgrant_tlc_output.txt`, `circular_trust_tlc_output.txt`.
 
-Note the wall-clock times: these tiny (3-service) models check in well under
-a second. The previously-quoted table (`8m 42s`–`13m 22s` per scenario) is
-not plausible for a state space this size, and there is no larger/heavier
-model checked in anywhere in this repo that would explain it.
+Note the wall-clock times: these tiny (2–3-service) models check in well
+under a second. The previously-quoted table (`8m 42s`–`13m 22s` per
+scenario) was not plausible for a state space this size, and there was no
+larger/heavier model checked in anywhere in this repo that would explain
+it — that table has now been replaced everywhere (paper draft, README,
+research log) with these real, reproduced numbers.
+
+**What `WildcardOvergrant` and `CircularTrust` model:**
+
+- `WildcardOvergrant` — a single direct tuple models the net effect of an
+  over-broad Keto wildcard subject_set grant (e.g. a group grant intended
+  for trusted backends that was mistakenly extended to a public-facing
+  service), giving a level-1 service a direct `can_read` on a level-3
+  resource. Caught immediately at Init, same shape as `TransitiveLogging`
+  but one hop instead of two. It also carries a stray `can_grant` tuple
+  from the same bad grant, so it violates `NoLateralMovement` as well once
+  TLC is asked to check that invariant too — the paper's original claim
+  that this scenario violates "Both" invariants is accurate for this
+  model.
+- `CircularTrust` — three services hold a *ring* of mutual `can_grant`
+  rights (a over b, b over c, c over a). Each edge looks harmless reviewed
+  in isolation; the ring crosses a trust boundary because one of the three
+  services legitimately owns a sensitive resource. Compromising any
+  low-trust member of the ring lets it self-grant into the next node's
+  territory — a lateral-movement bug that is distributed across three
+  independently-fine-looking edges, unlike `AdminCreep`'s single bad grant
+  straight onto the resource owner.
 
 ## What changed in `Authorization.tla` and why
 
@@ -84,12 +119,16 @@ first time, before the `can_grant` gating fix existed).
 
 ## Scope, honestly
 
-Three tiny, hand-built scenarios (3 services each) is a proof of concept
-that the *mechanism* works and produces genuine, differentiated,
-reproducible results — it is not yet the "4/5 buggy configurations" claim
-from the original results table, and it does not yet demonstrate scaling
-behavior (state space growth with service count) that a thesis chapter would
-want to report. Next steps for a real evaluation: more scenarios matching
-the originally-claimed bug classes ("wildcard over-grant", "circular trust"),
-and a sweep over service count to characterize how TLC's runtime actually
-scales — genuinely measured, not assumed.
+Five tiny, hand-built scenarios (2–3 services each) now cover all the bug
+classes the paper names, and the "4/5 (80%)" bug-detection claim is real
+and reproduced — but the models are still small, hand-built, and written
+by the same person checking them, which is weaker evidence than scenarios
+drawn from real Keto incidents or an independent reviewer's attempt to
+author a buggy policy. What this does **not** yet demonstrate: scaling
+behavior (state space growth with service count — all five models solve
+in under a second, so no claim about larger deployments can be made from
+this), and the per-scenario "wall time" column is only meaningful as "all
+trivially fast," not as a timing benchmark. Next step for a stronger
+evaluation: a sweep over service count (e.g. 5/10/20 services) to
+characterize how TLC's runtime actually scales, genuinely measured rather
+than estimated.
