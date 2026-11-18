@@ -140,12 +140,12 @@ Encrypts, obfuscates, or fragments data to prevent reconnaissance of data semant
 
 Since Sengupta et al.'s survey (2020), a small number of papers have begun to address MTD in cloud-native environments. The most directly related is:
 
-**MDPI Future Internet 2024** (DOI: https://doi.org/10.3390/fi17120580) — proposes adaptive MTD policies for microservices to mitigate DDoS. The paper demonstrates port rotation in a Docker Swarm environment and uses ML-based policy adaptation.
+**Zhou, Cheng & Du (2025)**, *Future Internet* 17(12):580 (DOI: https://doi.org/10.3390/fi17120580) — proposes ScaleShield, an adaptive Moving Target Defense framework for cloud-native microservices that uses Deep Reinforcement Learning (a Multi-Dimensional Double DQN) to learn coordinated defense-action policies against resource-exhaustion DDoS attacks. The verified abstract does not describe Docker Swarm as the platform, and does not mention authorization integration or formal verification — this thesis's earlier notes had both details wrong (see `01_paper_summaries/P10_...md` for the correction).
 
-This thesis differentiates from the MDPI 2024 paper in three key ways:
-1. **No ML:** this thesis uses statistical methods; MDPI 2024 uses ML-based policy selection
-2. **Formal verification:** this thesis verifies authorization invariants with TLA+; MDPI 2024 has no formal component
-3. **Authorization integration:** this thesis integrates MTD rotation with Ory Keto (Zanzibar-based authorization); MDPI 2024 uses a simple allowlist
+This thesis differentiates from Zhou et al. (2025) in ways that are about scope, not a strict "no-ML wins" comparison — that paper does use machine learning (DRL) for its policy selection:
+1. **Statistical vs. learned detection:** this thesis uses interpretable, training-free statistical methods (Shannon entropy + CUSUM) by design; Zhou et al. use a learned DRL policy, which is a legitimate but different trade-off, not something this thesis empirically outperforms on their metric (they report defense success rate and latency, not F1/precision/recall, so no head-to-head number exists).
+2. **Formal verification:** this thesis verifies authorization invariants with TLA+; Zhou et al.'s abstract describes no formal component.
+3. **Authorization integration:** this thesis integrates MTD rotation with Ory Keto (Zanzibar-based authorization); Zhou et al.'s abstract describes no authorization-layer integration.
 
 ### 2.3.4 MTD Evaluation Metrics
 
@@ -332,7 +332,7 @@ This section synthesizes the literature to identify the three specific gaps that
 
 **Evidence from the literature:**
 - Sengupta et al. (2020), Section VI.D: *"Application of MTD to cloud-native container-orchestrated environments remains an open research direction."* (200-paper survey, 2020)
-- MDPI 2024 (Contribution 3's predecessor): applies MTD to Docker Swarm, not Kubernetes; does not integrate authorization; uses ML.
+- Zhou et al. (2025) ("MDPI," Contribution 1's closest related work): applies DRL-based adaptive MTD to cloud-native microservices for DDoS mitigation; the verified abstract does not describe authorization integration or formal verification.
 - No paper in the corpus of 200 papers reviewed by Sengupta et al. integrates MTD rotation with a dynamic authorization system.
 
 **Gap:** MTD for Kubernetes services integrated with Zanzibar-based authorization.
@@ -363,13 +363,12 @@ This section synthesizes the literature to identify the three specific gaps that
 
 ### Summary Table: Thesis Positioning
 
-| Feature | Sengupta 2020 | MDPI 2024 | Zanzibar 2019 | **This Thesis** |
+| Feature | Sengupta 2020 | Zhou et al. 2025 | Zanzibar 2019 | **This Thesis** |
 |---------|--------------|-----------|--------------|----------------|
-| MTD in Kubernetes | Not done | Docker Swarm | N/A | **Kubernetes ✓** |
-| No ML | N/A | Uses ML | N/A | **No ML ✓** |
-| Authorization integration | No | No | Yes (static) | **Yes (dynamic) ✓** |
-| Formal verification | No | No | No | **TLA+ ✓** |
-| Statistical detection | No | ML only | No | **Entropy+CUSUM ✓** |
+| MTD in Kubernetes | Not done | Cloud-native (platform not specified in abstract) | N/A | **Kubernetes ✓** |
+| Detection approach | N/A | DRL (learned policy) | N/A | **Statistical (Entropy+CUSUM) ✓** |
+| Authorization integration | No | Not described | Yes (static) | **Yes (dynamic) ✓** |
+| Formal verification | No | Not described | No | **TLA+ ✓** |
 
 This table demonstrates that no single prior work covers all three contributions simultaneously. The combination of MTD, statistical detection, and formal verification is novel.
 

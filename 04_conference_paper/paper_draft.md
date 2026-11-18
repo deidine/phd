@@ -7,7 +7,7 @@ Faculté des Sciences et Techniques (FST), Université de Nouakchott Al Aasriya
 Nouakchott, Mauritania
 c16627@fst.e_una.mr
 
-**Target venue:** IEEE International Conference on Cloud Computing (CloudCom) 2026
+**Target venue:** IEEE conference on cloud/edge computing (venue and date to be finalized once the MKE/SAAD evaluation is complete)
 
 ---
 
@@ -45,7 +45,7 @@ We present a framework that addresses all three problems simultaneously, relying
 
 Jajodia et al. [6] established MTD as a formal research programme: proactively shifting system properties to create asymmetric uncertainty. Sengupta et al. [2] survey 200 MTD papers and identify four categories (network, platform, software, data layer), explicitly noting that MTD for Kubernetes containers "remains an open research direction" [2, §VI.D].
 
-The most directly related work is a 2024 MDPI paper [7] that applies adaptive MTD to Docker Swarm microservices. Our work differs in three ways: (1) we target Kubernetes (not Docker Swarm); (2) our detection layer is statistical rather than ML-based; (3) we integrate MTD with formal authorization verification.
+The most directly related work is Zhou et al. [7] (2025), which proposes ScaleShield, a Deep Reinforcement Learning-based adaptive MTD framework for cloud-native microservices targeting resource-exhaustion DDoS. Our work differs in scope rather than on a shared metric: (1) our detection layer is statistical and training-free (entropy + CUSUM) rather than a learned DRL policy; (2) we integrate MTD rotation with formal authorization verification, which [7]'s abstract does not describe; (3) we target authorization-aware lateral movement in addition to DDoS.
 
 ### 2.2 Zanzibar and Ory Keto
 
@@ -166,9 +166,8 @@ Evaluation on CIC-IDS2017 DDoS and DoS subsets (https://www.unb.ca/crc/research/
 | Entropy only | 91.2% | 87.3% | 89.2% | 1.8% |
 | CUSUM only | 88.4% | 82.1% | 85.1% | 2.4% |
 | **Entropy + CUSUM** | **94.6%** | **93.4%** | **94.0%** | **1.1%** |
-| MDPI 2024 [7] (ML) | 96.1% | 94.2% | 95.1% | 0.9% |
 
-The combined statistical detector achieves F1 = 94.0%, within 1.1 pp of the ML-based MDPI 2024 system, with no training data required. For a deployment to a new Kubernetes cluster (zero historical traffic), SAAD is immediately operational; the MDPI 2024 ML approach requires training.
+The combined statistical detector targets F1 = 94.0% with no training data required. For a deployment to a new Kubernetes cluster (zero historical traffic), SAAD is immediately operational, unlike detectors that require a training phase.
 
 **Live testbed results:**
 - DDoS detection latency: 8.3s (mean), 11.4s (p95)
@@ -205,17 +204,18 @@ Three services hold a ring of mutual `can_grant` rights, each edge looking harml
 
 Fix (transitive logging): remove the `svc_logger --can_write--> db_sensitive` tuple — logging services should write to a log aggregator at the same trust level, not a sensitive database. Fix (circular trust): break the `can_grant` ring, or restrict it to services at the same permission level.
 
-### 4.5 Comparison with MDPI 2024
+### 4.5 Comparison with Zhou et al. [7]
 
-| Feature | MDPI 2024 [7] | **This work** |
+Zhou et al. [7] (2025) is the closest related work in scope but targets a different problem with different metrics, so a single head-to-head table would overstate the comparison. The table below is limited to what is actually verifiable from their published abstract; rows are left blank rather than guessed where their abstract does not say.
+
+| Feature | Zhou et al. [7] (2025) | **This work** |
 |---------|---------------|--------------|
-| Platform | Docker Swarm | **Kubernetes** |
-| Machine-learning dependency | Yes | **No** |
-| Authorization integration | Allowlist | **Ory Keto (Zanzibar)** |
-| Formal verification | None | **TLA+ ✓** |
-| F1 score | 95.1% (ML) | 94.0% (statistical) |
-| MTTC improvement | Not reported | **7.6×** |
-| Training data required | Yes | **No** |
+| Platform | Cloud-native microservices (not specified as Kubernetes or Docker Swarm) | **Kubernetes** |
+| Detection/policy approach | Deep Reinforcement Learning (MD3QN) | **Statistical (entropy + CUSUM), training-free** |
+| Authorization integration | Not described | **Ory Keto (Zanzibar)** |
+| Formal verification | Not described | **TLA+ ✓** |
+| Primary target | Resource-exhaustion DDoS | MTD + authorization correctness + statistical detection |
+| Reported effectiveness metric | ~100% defense success rate, ~5 steps to zero compromised nodes | 7.6× MTTC improvement (target), F1 = 94.0% (target) |
 
 ---
 
@@ -223,7 +223,7 @@ Fix (transitive logging): remove the `svc_logger --can_write--> db_sensitive` tu
 
 ### 5.1 Rationale for Statistical Rather Than ML-Based Detection
 
-The 1.1 pp F1 gap between SAAD (94.0%) and the ML approach in [7] (95.1%) is the cost of interpretability, training-freedom, and adversarial robustness. In a security operations context: (a) an analyst who receives a SAAD alert can immediately trace it to "entropy dropped 47% on svc_api in the last 10 seconds" and decide whether to act; (b) an analyst who receives an ML alert cannot explain why; (c) an attacker who knows the ML model can craft traffic to evade it; an attacker cannot easily craft traffic that does not lower entropy during a flood.
+SAAD trades some ceiling on raw detection accuracy for interpretability, training-freedom, and adversarial robustness, relative to a learned (ML-based) detector. In a security operations context: (a) an analyst who receives a SAAD alert can immediately trace it to "entropy dropped 47% on svc_api in the last 10 seconds" and decide whether to act; (b) an analyst who receives an ML alert cannot explain why; (c) an attacker who knows the ML model can craft traffic to evade it; an attacker cannot easily craft traffic that does not lower entropy during a flood.
 
 ### 5.2 MTD Limitations
 
@@ -258,7 +258,7 @@ We present a three-layer security framework for distributed microservices, built
 
 [6] Jajodia, S. et al. (eds.) (2011). *Moving Target Defense.* Springer. DOI: https://doi.org/10.1007/978-1-4614-0977-9
 
-[7] MDPI Future Internet (2024). MTD for microservices. DOI: https://doi.org/10.3390/fi17120580
+[7] Zhou, Y., Cheng, G. & Du, K. (2025). Enhancing microservice security through adaptive moving target defense policies to mitigate DDoS attacks in cloud-native environments. *Future Internet* 17(12):580. DOI: https://doi.org/10.3390/fi17120580
 
 [8] Ryan, M.D. et al. (2023). A survey of practical formal methods for security. *Formal Aspects of Computing.* DOI: https://doi.org/10.1145/3522582
 
